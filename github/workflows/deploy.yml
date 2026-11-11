@@ -22,18 +22,24 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Write config.js from secret
+      
+      - name: Create config.js from secret
         env:
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
         run: |
           echo "const API_KEY = \"$OPENWEATHER_API_KEY\";" > config.js
-          echo "Created config.js:"
+          echo "Config created:"
           cat config.js
-          ls -la
+          echo "--- removing config.js from .gitignore so Pages can upload it ---"
+          sed -i '/config.js/d' .gitignore || true
+          cat .gitignore
+
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - id: deployment
         uses: actions/deploy-pages@v4
-        
