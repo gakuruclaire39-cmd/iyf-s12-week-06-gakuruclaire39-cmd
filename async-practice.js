@@ -300,3 +300,107 @@ Promise.allSettled([
         }
     });
 });
+
+// ===== TASK 11.4: Async/Await =====
+console.log("--- TASK 11.4 STARTS IN 10s ---");
+
+setTimeout(async () => {
+console.log("=== TASK 11.4: Async/Await ===");
+
+// Exercise 1: Converting to Async/Await
+
+// Promise chain version:
+function getDataWithPromises() {
+    return getUserData(1)
+        .then(user => getUserPosts(user.id))
+        .then(posts => getPostComments(posts[0].id))
+        .then(comments => comments);
+}
+
+// Async/await version (much cleaner!):
+async function getDataWithAsync() {
+    const user = await getUserData(1);
+    const posts = await getUserPosts(user.id);
+    const comments = await getPostComments(posts[0].id);
+    return comments;
+}
+
+console.log("Ex 1: Promise chain version");
+getDataWithPromises().then(c => console.log("Promises result:", c));
+
+console.log("Ex 1: Async/Await version");
+const comments1 = await getDataWithAsync();
+console.log("Async/Await result:", comments1);
+
+// Exercise 2: Error Handling with Try/Catch
+async function fetchUserData(userId) {
+    try {
+        const user = await getUserData(userId);
+        const posts = await getUserPosts(user.id);
+        return { user, posts };
+    } catch (error) {
+        console.error("Failed to fetch:", error);
+        throw error;
+    }
+}
+
+console.log("Ex 2: Try/Catch - success case");
+const data = await fetchUserData(1);
+console.log("Fetched:", data);
+
+console.log("Ex 2: Try/Catch - fail case");
+try {
+    await fetchUserData(-1);
+} catch(e) {
+    console.log("Caught error as expected:", e);
+}
+
+// Exercise 3: Parallel with Async/Await
+async function getAllUsers() {
+    console.log("Sequential (slow) - 3 sec");
+    let start = Date.now();
+    const user1 = await getUserData(1);
+    const user2 = await getUserData(2);
+    const user3 = await getUserData(3);
+    console.log(`Sequential done in ${Date.now()-start}ms:`, [user1,user2,user3]);
+
+    console.log("Parallel (fast) - 1 sec");
+    start = Date.now();
+    const [u1, u2, u3] = await Promise.all([
+        getUserData(1),
+        getUserData(2),
+        getUserData(3)
+    ]);
+    console.log(`Parallel done in ${Date.now()-start}ms:`, [u1,u2,u3]);
+    
+    return [u1, u2, u3];
+}
+
+await getAllUsers();
+
+// BUILD: Rewrite callback hell using async/await
+console.log("=== BUILD: Callback Hell -> Async/Await ===");
+
+async function buildRewrite() {
+    try {
+        // OLD callback hell was 3 nested callbacks
+        // NEW async/await - flat and clean
+        const user = await getUserData(1);
+        console.log("BUILD User:", user);
+        
+        const posts = await getUserPosts(user.id);
+        console.log("BUILD Posts:", posts);
+        
+        const comments = await getPostComments(posts[0].id);
+        console.log("BUILD Comments:", comments);
+        
+        console.log("✔ BUILD COMPLETE - Same result, no hell!");
+        return { user, posts, comments };
+    } catch (error) {
+        console.error("BUILD Error:", error);
+    }
+}
+
+await buildRewrite();
+
+}, 10000);
