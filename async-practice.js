@@ -404,3 +404,182 @@ async function buildRewrite() {
 await buildRewrite();
 
 }, 10000);
+
+// ===== TASK 12.1: Fetch API Basics =====
+
+// Exercise 1: Your First Fetch
+fetch("https://jsonplaceholder.typicode.com/users/1")
+    .then(response => {
+        console.log("Response object:", response);
+        console.log("Status:", response.status);
+        console.log("OK:", response.ok);
+        return response.json();
+    })
+    .then(data => {
+        console.log("User data:", data);
+    })
+    .catch(error => {
+        console.error("Fetch error:", error);
+    });
+
+// Exercise 2: Fetch with Async/Await
+async function getUser(id) {
+    try {
+        const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch user:", error);
+    }
+}
+
+async function main121() {
+    const user = await getUser(1);
+    console.log("12.1 user:", user);
+    
+    // Practice: All users
+    const allRes = await fetch("https://jsonplaceholder.typicode.com/users");
+    const allUsers = await allRes.json();
+    console.log("All users:", allUsers);
+    
+    // Posts for user 1
+    const postsRes = await fetch("https://jsonplaceholder.typicode.com/users/1/posts");
+    const posts = await postsRes.json();
+    console.log("Posts for user 1:", posts);
+}
+main121();
+
+// ===== TASK 12.2: Display API Data in DOM =====
+const loading = document.getElementById("loading");
+const errorDiv = document.getElementById("error");
+const container = document.getElementById("users-container");
+
+function showLoading() {
+    loading.classList.remove("hidden");
+    container.innerHTML = "";
+}
+function hideLoading() {
+    loading.classList.add("hidden");
+}
+function showError(message) {
+    errorDiv.textContent = `Error: ${message}`;
+    errorDiv.classList.remove("hidden");
+}
+function displayUsers(users) {
+    container.innerHTML = users.map(user => `
+        <div class="user-card">
+            <h2>${user.name}</h2>
+            <p>📧 ${user.email}</p>
+            <p>🏢 ${user.company.name}</p>
+            <p>📍 ${user.address.city}</p>
+        </div>
+    `).join("");
+}
+
+async function loadUsers() {
+    try {
+        showLoading();
+        const response = await fetch("https://jsonplaceholder.typicode.com/users");
+        if (!response.ok) throw new Error("Failed to fetch users");
+        const users = await response.json();
+        displayUsers(users);
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        hideLoading();
+    }
+}
+loadUsers();
+
+// ===== TASK 12.3: POST Requests =====
+async function createPost(title, body, userId) {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, body, userId })
+    });
+    if (!response.ok) throw new Error("Failed to create post");
+    return response.json();
+}
+
+async function demoPost() {
+    const newPost = await createPost("My First Post", "This is the content.", 1);
+    console.log("Created:", newPost);
+}
+demoPost();
+
+// Form handler (Build)
+const postForm = document.getElementById("postForm");
+if (postForm) {
+    postForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const title = document.getElementById("postTitle").value;
+        const body = document.getElementById("postBody").value;
+        const userId = document.getElementById("postUserId").value;
+        const result = await createPost(title, body, userId);
+        document.getElementById("postResult").innerHTML = JSON.stringify(result, null, 2);
+    });
+}
+
+// ===== TASK 12.4: Search & Filter =====
+let allUsers = [];
+let filteredUsers = [];
+
+async function init124() {
+    const res = await fetch("https://jsonplaceholder.typicode.com/users");
+    allUsers = await res.json();
+    filteredUsers = [...allUsers];
+    
+    // Populate city filter
+    const cityFilter = document.getElementById("cityFilter");
+    if (cityFilter) {
+        const cities = [...new Set(allUsers.map(u => u.address.city))];
+        cities.forEach(city => {
+            const opt = document.createElement("option");
+            opt.value = city;
+            opt.textContent = city;
+            cityFilter.appendChild(opt);
+        });
+    }
+    
+    displayUsers(allUsers);
+
+    // Search
+    const searchInput = document.getElementById("search");
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            applyFilters();
+        });
+    }
+    // Sort
+    const sortSelect = document.getElementById("sort");
+    if (sortSelect) sortSelect.addEventListener("change", applyFilters);
+    // City filter
+    if (cityFilter) cityFilter.addEventListener("change", applyFilters);
+}
+
+function applyFilters() {
+    let result = [...allUsers];
+    const query = document.getElementById("search")?.value.toLowerCase() || "";
+    const city = document.getElementById("cityFilter")?.value || "";
+    const sort = document.getElementById("sort")?.value || "";
+
+    if (query) {
+        result = result.filter(user => 
+            user.name.toLowerCase().includes(query) ||
+            user.email.toLowerCase().includes(query)
+        );
+    }
+    if (city) {
+        result = result.filter(user => user.address.city === city);
+    }
+    if (sort === "az") result.sort((a,b) => a.name.localeCompare(b.name));
+    if (sort === "za") result.sort((a,b) => b.name.localeCompare(a.name));
+
+    displayUsers(result);
+}
+
+init124();
