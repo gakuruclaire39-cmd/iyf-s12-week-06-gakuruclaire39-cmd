@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -22,10 +22,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Write config.js from the repository secret
+      - name: Write config.js from secret
         env:
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
-        run: echo "const API_KEY = \"$OPENWEATHER_API_KEY\";" > config.js
+        run: |
+          echo "const API_KEY = \"$OPENWEATHER_API_KEY\";" > config.js
+          echo "Created config.js:"
+          cat config.js
+          ls -la
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
