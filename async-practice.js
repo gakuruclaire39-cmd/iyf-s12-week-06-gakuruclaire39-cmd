@@ -193,3 +193,110 @@ getUserData(1)
     .catch(err => {
         console.log("Promise Error:", err);
     });
+
+// ===== TASK 11.3: Promise Chaining =====
+
+console.log("--- TASK 11.3 Exercise 1: Chain Promises ---");
+
+// After refactoring to Promises:
+getUserData(1)
+    .then(user => {
+        console.log("User:", user);
+        return getUserPosts(user.id);
+    })
+    .then(posts => {
+        console.log("Posts:", posts);
+        return getPostComments(posts[0].id);
+    })
+    .then(comments => {
+        console.log("Comments:", comments);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+
+console.log("--- TASK 11.3 Exercise 2: Promise.all ---");
+
+// Run multiple promises in parallel
+const promise1 = getUserData(1);
+const promise2 = getUserData(2);
+const promise3 = getUserData(3);
+
+Promise.all([promise1, promise2, promise3])
+    .then(results => {
+        console.log("All users:", results);
+        // results is an array [user1, user2, user3]
+    })
+    .catch(error => {
+        // If ANY promise fails, this runs
+        console.error("One failed:", error);
+    });
+
+console.log("--- TASK 11.3 Exercise 3: Promise.race ---");
+
+// First to complete wins
+const fast = new Promise(resolve => setTimeout(() => resolve("Fast!"), 100));
+const slow = new Promise(resolve => setTimeout(() => resolve("Slow!"), 500));
+
+Promise.race([fast, slow])
+    .then(result => {
+        console.log("Winner:", result);  // "Fast!"
+    });
+
+// ===== BUILD TASK: Fetch data for 3 users simultaneously and display them all at once =====
+
+function buildUsersDisplay(users) {
+    console.log("=== BUILD: Displaying 3 users at once ===");
+    users.forEach(user => {
+        console.log(`User ${user.id}: ${user.name}`);
+    });
+    
+    // If you have HTML:
+    const container = document.getElementById('users-container');
+    if (container) {
+        container.innerHTML = users.map(user => `
+            <div class="user-card">
+                <h3>User ${user.id}</h3>
+                <p>Name: ${user.name}</p>
+            </div>
+        `).join('');
+    }
+}
+
+// Fetch 3 users simultaneously and display them all at once
+Promise.all([
+    getUserData(1),
+    getUserData(2),
+    getUserData(3)
+])
+.then(allUsers => {
+    console.log("BUILD - All 3 users fetched:", allUsers);
+    buildUsersDisplay(allUsers);
+    return Promise.all([
+        getUserPosts(allUsers[0].id),
+        getUserPosts(allUsers[1].id),
+        getUserPosts(allUsers[2].id)
+    ]);
+})
+.then(allPosts => {
+    console.log("BUILD - All posts for 3 users:", allPosts);
+})
+.catch(error => {
+    console.error("BUILD Error:", error);
+});
+
+// BONUS: Promise.allSettled - shows success + failures
+Promise.allSettled([
+    getUserData(1),
+    getUserData(-1), // will fail
+    getUserData(3)
+]).then(results => {
+    console.log("allSettled results:", results);
+    results.forEach((r, i) => {
+        if (r.status === 'fulfilled') {
+            console.log(`User ${i+1} success:`, r.value);
+        } else {
+            console.log(`User ${i+1} failed:`, r.reason);
+        }
+    });
+});
