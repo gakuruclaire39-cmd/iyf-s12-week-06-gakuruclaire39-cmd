@@ -47,3 +47,5 @@ I had many errors this week. First I got 401 error from weather API - my key was
 
 [View my async-practice.html](https://gakuruclaire39-cmd.github.io/iyf-s12-week-06-gakuruclaire39-cmd/async-practice.html)
 I added this to live demo in order to see my async-practice.js in console and to check fore errors in the code.
+
+I added a fetch-practice.js file for Lessons 12 work since the app.js contains mini project and I did not want to interfere with it.
