@@ -72,3 +72,124 @@ loadUser(39, function(user) {
 loadUser(1, (user) => {
     console.log("Arrow callback - User:", user.name);
 });
+
+// ===== TASK 11.2: Callback Hell & Promises =====
+
+// Exercise 1: Experience Callback Hell
+// This is BAD - "Callback Hell" or "Pyramid of Doom"
+function getUserDataCB(userId, callback) {
+    setTimeout(() => {
+        callback({ id: userId, name: "John" });
+    }, 1000);
+}
+
+function getUserPostsCB(userId, callback) {
+    setTimeout(() => {
+        callback([
+            { id: 1, title: "Post 1" },
+            { id: 2, title: "Post 2" }
+        ]);
+    }, 1000);
+}
+
+function getPostCommentsCB(postId, callback) {
+    setTimeout(() => {
+        callback([
+            { id: 1, text: "Great post!" },
+            { id: 2, text: "Thanks for sharing" }
+        ]);
+    }, 1000);
+}
+
+// The nightmare:
+getUserDataCB(1, function(user) {
+    console.log("User:", user);
+    getUserPostsCB(user.id, function(posts) {
+        console.log("Posts:", posts);
+        getPostCommentsCB(posts[0].id, function(comments) {
+            console.log("Comments:", comments);
+        });
+    });
+});
+
+// Exercise 2: Promises to the Rescue
+// Creating a Promise
+const myPromise = new Promise((resolve, reject) => {
+    const success = true;
+    setTimeout(() => {
+        if (success) {
+            resolve("It worked!");
+        } else {
+            reject("Something went wrong");
+        }
+    }, 1000);
+});
+
+// Using a Promise
+myPromise
+    .then(result => {
+        console.log("Success:", result);
+    })
+    .catch(error => {
+        console.log("Error:", error);
+    });
+
+// Refactored to return Promises
+function getUserData(userId) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (userId > 0) {
+                resolve({ id: userId, name: "John" });
+            } else {
+                reject("Invalid user ID");
+            }
+        }, 1000);
+    });
+}
+
+function getUserPosts(userId) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (userId > 0) {
+                resolve([
+                    { id: 1, title: "Post 1" },
+                    { id: 2, title: "Post 2" }
+                ]);
+            } else {
+                reject("Invalid user ID");
+            }
+        }, 1000);
+    });
+}
+
+function getPostComments(postId) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (postId > 0) {
+                resolve([
+                    { id: 1, text: "Great post!" },
+                    { id: 2, text: "Thanks for sharing" }
+                ]);
+            } else {
+                reject("Invalid post ID");
+            }
+        }, 1000);
+    });
+}
+
+// Test Promises version - clean!
+getUserData(1)
+    .then(user => {
+        console.log("Promise User:", user);
+        return getUserPosts(user.id);
+    })
+    .then(posts => {
+        console.log("Promise Posts:", posts);
+        return getPostComments(posts[0].id);
+    })
+    .then(comments => {
+        console.log("Promise Comments:", comments);
+    })
+    .catch(err => {
+        console.log("Promise Error:", err);
+    });
