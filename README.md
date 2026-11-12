@@ -27,6 +27,20 @@ For this week I had to learn async javascript. It was about callbacks, promises,
 - User directory page with search, sort A-Z, filter by city
 - Form to create post using POST request
 
+## Project Structure
+```
+iyf-s12-week-06-gakuruclaire39-cmd/
+├── daily-challenges.js    # Day 1-5 challenges
+├── async-practice.js      # Lesson 11
+├── fetch-practice.js      # Lesson 12
+├── app.js                 # Weather Dashboard
+├── config.js
+├── config.example.js
+├── index.html
+├── styles.css
+└── README.md
+```
+
 ## How to Run
 1. Clone this repo: git clone https://github.com/gakuruclaire39-cmd/iyf-s12-week-06-gakuruclaire39-cmd.git
 2. You need a free API key from OpenWeatherMap - sign up on openweathermap.org
